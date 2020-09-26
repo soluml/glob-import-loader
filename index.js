@@ -3,7 +3,6 @@ const glob = require("glob");
 const replaceAsync = require("string-replace-async");
 const loaderUtils = require("loader-utils");
 const enhancedResolver = require("enhanced-resolve");
-const { rejects } = require("assert");
 
 module.exports = async function (source) {
   this.cacheable && this.cacheable(true);
