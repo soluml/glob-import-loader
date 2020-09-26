@@ -1,6 +1,6 @@
 {
   "name": "glob-import-loader",
-  "version": "1.0.0",
+  "version": "1.0.0-alpha",
   "description": "Webpack loader that enables glob patterns in ES6 imports.",
   "license": "MIT",
   "main": "index.js",
@@ -17,7 +17,8 @@
   "dependencies": {
     "enhanced-resolve": "^5.0.0",
     "glob": "^7.1.6",
-    "loader-utils": "^2.0.0"
+    "loader-utils": "^2.0.0",
+    "string-replace-async": "^2.0.0"
   },
   "devDependencies": {},
   "scripts": {
