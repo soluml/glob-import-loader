@@ -13,7 +13,7 @@ module.exports = async function (source) {
   const importFiles = /import +([\'\"])(.*?)\1/gm;
   const importSass = /@import +([\'\"])(.*?)\1/gm;
   const options = Object.assign({}, loaderUtils.getOptions(this));
-  const resolvePath = (pathToResolve) => {
+  const resolvePaths = (pathToResolve) => {
     return new Promise((resolve, reject) => {
       enhancedResolver.create(options.resolve || {})(
         this,
@@ -22,13 +22,17 @@ module.exports = async function (source) {
         (err, result) => {
           if (err && !result) {
             if (Array.isArray(err.missing)) {
-              // Use the path without extensions
-              resolve(err.missing.sort()[0]);
+              resolve(
+                err.missing
+                  .filter(glob.hasMagic)
+                  .map((M) => glob.sync(M))
+                  .flat()
+              );
             } else {
               callback(new Error("Could not resolve the wildcard path."));
             }
 
-            resolve(result);
+            resolve([result]);
           }
         }
       );
@@ -48,8 +52,8 @@ module.exports = async function (source) {
       const globRelativePath = filename.match(/!?([^!]*)$/)[1];
       const prefix = filename.replace(globRelativePath, "");
       let withModules = false;
-      let result = glob
-        .sync(await resolvePath(globRelativePath))
+
+      let result = (await resolvePaths(globRelativePath))
         .map((file, index) => {
           const fileName = quote + prefix + file + quote;
           let importString;
