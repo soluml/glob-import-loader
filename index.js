@@ -40,7 +40,7 @@ module.exports = async function (source) {
     regex,
     async (match, fromStatement, obj, quote, filename) => {
       // If there are no wildcards, return early
-      if (!filename.match(/\*/)) {
+      if (!glob.hasMagic(filename)) {
         return match;
       }
 
