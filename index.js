@@ -35,13 +35,15 @@ module.exports = async function (source) {
                 );
 
                 if (!filteredMissing.length) {
-                  callback(new Error("Could not resolve the wildcard path."));
+                  this.emitWarning(
+                    "Could not find any files that matched the wildcard path."
+                  );
                 }
               }
 
-              resolve(filteredMissing);
+              return resolve(filteredMissing);
             } else {
-              callback(new Error("Could not resolve the wildcard path."));
+              return reject("Could not resolve the wildcard path.");
             }
 
             resolve([result]);
@@ -51,65 +53,69 @@ module.exports = async function (source) {
     });
   };
 
-  const updatedSource = await replaceAsync(
-    source,
-    regex,
-    async (match, fromStatement, obj, quote, filename) => {
-      // If there are no wildcards, return early
-      if (!glob.hasMagic(filename)) {
-        return match;
-      }
-
-      const modules = [];
-      const globRelativePath = filename.match(/!?([^!]*)$/)[1];
-      const prefix = filename.replace(globRelativePath, "");
-      let withModules = false;
-
-      let result = (await resolvePaths(globRelativePath))
-        .map((file, index) => {
-          const fileName = quote + prefix + file + quote;
-          let importString;
-
-          if (match.match(importSass)) {
-            importString = "@import " + fileName;
-          } else if (match.match(importModules)) {
-            const moduleName = obj + index;
-            modules.push({ path: fileName, module: moduleName });
-            withModules = true;
-            importString = "import * as " + moduleName + " from " + fileName;
-          } else if (match.match(importFiles)) {
-            importString = "import " + fileName;
-          } else {
-            this.emitWarning('Unknown import: "' + match + '"');
-          }
-
-          return importString + ";";
-        })
-        .join(" ");
-
-      if (result && withModules && options.srcArray) {
-        if (options.includePaths) {
-          result += ` var ${obj} = [${modules.reduce(
-            (acc, cur) => `${acc}{path:${cur.path},module:${cur.module}}`,
-            ""
-          )}];`;
-        } else {
-          result +=
-            " var " +
-            obj +
-            " = [" +
-            modules.map(({ module }) => module).join(", ") +
-            "];";
+  try {
+    const updatedSource = await replaceAsync(
+      source,
+      regex,
+      async (match, fromStatement, obj, quote, filename) => {
+        // If there are no wildcards, return early
+        if (!glob.hasMagic(filename)) {
+          return match;
         }
+
+        const modules = [];
+        const globRelativePath = filename.match(/!?([^!]*)$/)[1];
+        const prefix = filename.replace(globRelativePath, "");
+        let withModules = false;
+
+        let result = (await resolvePaths(globRelativePath))
+          .map((file, index) => {
+            const fileName = quote + prefix + file + quote;
+            let importString;
+
+            if (match.match(importSass)) {
+              importString = "@import " + fileName;
+            } else if (match.match(importModules)) {
+              const moduleName = obj + index;
+              modules.push({ path: fileName, module: moduleName });
+              withModules = true;
+              importString = "import * as " + moduleName + " from " + fileName;
+            } else if (match.match(importFiles)) {
+              importString = "import " + fileName;
+            } else {
+              this.emitWarning('Unknown import: "' + match + '"');
+            }
+
+            return importString + ";";
+          })
+          .join(" ");
+
+        if (result && withModules && options.srcArray) {
+          if (options.includePaths) {
+            result += ` var ${obj} = [${modules.reduce(
+              (acc, cur) => `${acc}{path:${cur.path},module:${cur.module}}`,
+              ""
+            )}];`;
+          } else {
+            result +=
+              " var " +
+              obj +
+              " = [" +
+              modules.map(({ module }) => module).join(", ") +
+              "];";
+          }
+        }
+
+        if (!result) {
+          this.emitWarning('Empty results for "' + match + '"');
+        }
+
+        return result.slice(0, -1);
       }
+    );
 
-      if (!result) {
-        this.emitWarning('Empty results for "' + match + '"');
-      }
-
-      return result.slice(0, -1);
-    }
-  );
-
-  callback(null, updatedSource);
+    callback(null, updatedSource);
+  } catch (err) {
+    callback(err);
+  }
 };
