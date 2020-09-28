@@ -76,5 +76,31 @@ describe("loader", () => {
         "import '/mock/modules/a.js'; import '/mock/modules/b.js'; import '/mock/modules/c.js';"
       );
     });
+
+    it("should honor comment after expanding glob import files", async () => {
+      await loader.call(context, '//import "./modules/*.js";');
+
+      let [err, source] = callback.getCall(0).args;
+
+      expect(err).to.be.null;
+      expect(cleanSource(source)).to.equal(
+        '//import "/mock/modules/a.js"; import "/mock/modules/b.js"; import "/mock/modules/c.js";'
+      );
+
+      await loader.call(context, '// import "MODULES/*.js";');
+
+      [err, source] = callback.getCall(1).args;
+
+      expect(err).to.be.null;
+      expect(cleanSource(source)).to.equal(
+        '// import "/mock/modules/a.js"; import "/mock/modules/b.js"; import "/mock/modules/c.js";'
+      );
+    });
+
+    it("should emit warning when import nothing", async () => {
+      await loader.call(context, 'import "./unknown/*.js";');
+
+      assert.equal(context.emitWarning.called, true);
+    });
   });
 });
