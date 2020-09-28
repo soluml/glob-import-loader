@@ -103,4 +103,50 @@ describe("loader", () => {
       assert.equal(context.emitWarning.called, true);
     });
   });
+
+  describe('import modules from "*.js"', () => {
+    it("should expand glob import files but not add a global variable", async () => {
+      await loader.call(context, 'import modules from "./modules/*.js";');
+
+      let [err, source] = callback.getCall(0).args;
+
+      expect(cleanSource(source)).to.equal(
+        'import * as modules0 from "/mock/modules/a.js"; import * as modules1 from "/mock/modules/b.js"; import * as modules2 from "/mock/modules/c.js";'
+      );
+    });
+
+    it("should expand glob import files and add a global variable as an array", async () => {
+      getOptions.callsFake(() => ({ srcArray: true }));
+
+      await loader.call(context, 'import modules from "./modules/*.js";');
+
+      let [err, source] = callback.getCall(0).args;
+
+      expect(cleanSource(source)).to.equal(
+        'import * as modules0 from "/mock/modules/a.js"; import * as modules1 from "/mock/modules/b.js"; import * as modules2 from "/mock/modules/c.js"; var modules = [modules0, modules1, modules2];'
+      );
+    });
+
+    it("should expand glob import files and add a global variable as an object", async () => {
+      getOptions.callsFake(() => ({ srcArray: true, includePaths: true }));
+
+      await loader.call(context, 'import modules from "./modules/*.js";');
+
+      let [err, source] = callback.getCall(0).args;
+
+      expect(cleanSource(source)).to.equal(
+        'import * as modules0 from "/mock/modules/a.js"; import * as modules1 from "/mock/modules/b.js"; import * as modules2 from "/mock/modules/c.js"; var modules = [{path:"/mock/modules/a.js",module:modules0}{path:"/mock/modules/b.js",module:modules1}{path:"/mock/modules/c.js",module:modules2}];'
+      );
+
+      getOptions.callsFake(() => ({ includePaths: true }));
+
+      await loader.call(context, 'import modules from "./modules/*.js";');
+
+      [err, source] = callback.getCall(1).args;
+
+      expect(cleanSource(source)).to.equal(
+        'import * as modules0 from "/mock/modules/a.js"; import * as modules1 from "/mock/modules/b.js"; import * as modules2 from "/mock/modules/c.js";'
+      );
+    });
+  });
 });
