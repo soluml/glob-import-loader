@@ -35,7 +35,7 @@ beforeEach(async () => {
 
 describe("loader", () => {
   describe('import "*.js"', () => {
-    it("should expand glob import files", async () => {
+    it("should expand glob import files with an alias", async () => {
       await loader.call(context, 'import "MODULES/*.js*";');
 
       const [err, source] = callback.getCall(0).args;
