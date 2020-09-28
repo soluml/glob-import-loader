@@ -12,11 +12,7 @@ let context = {};
 let callback;
 
 function cleanSource(source) {
-  return replaceAll(
-    replaceAll(source, __dirname, ""),
-    path.resolve(__dirname, "../node_modules") + "/",
-    ""
-  );
+  return replaceAll(source, __dirname, "");
 }
 
 beforeEach(async () => {
@@ -187,13 +183,19 @@ describe("loader", () => {
 
   describe("from node_modules", () => {
     it("should load node_modules files", async () => {
-      await loader.call(context, 'import "THIS_IS_A_FAKE/*.js";');
+      getOptions.callsFake(() => ({
+        resolve: {
+          modules: [path.resolve(__dirname, "./mock/modules")],
+        },
+      }));
+
+      await loader.call(context, 'import "fake_module/*.js";');
 
       let [err, source] = callback.getCall(0).args;
 
       expect(err).to.be.null;
       expect(cleanSource(source)).to.equal(
-        'import "THIS_IS_A_FAKE/a.js"; import "THIS_IS_A_FAKE/b.js";'
+        'import "/mock/modules/fake_module/a.js"; import "/mock/modules/fake_module/b.js";'
       );
     });
   });
