@@ -9,7 +9,7 @@ module.exports = async function (source) {
   this.cacheable && this.cacheable(true);
 
   const callback = this.async();
-  const regex = /.?import + ?((\w+) +from )?([\'\"])(.*?);?\3/gm;
+  const regex = /@?import + ?((\w+) +from )?([\'\"])(.*?);?\3/gm;
   const importModules = /import +(\w+) +from +([\'\"])(.*?)\2/gm;
   const importFiles = /import +([\'\"])(.*?)\1/gm;
   const importSass = /@import +([\'\"])(.*?)\1/gm;

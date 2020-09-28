@@ -61,6 +61,7 @@ describe("loader", () => {
 
       [err, source] = callback.getCall(2).args;
 
+      expect(err).to.be.null;
       expect(cleanSource(source)).to.equal(
         "import '/mock/modules/a.js'; import '/mock/modules/b.js'; import '/mock/modules/c.js';"
       );
@@ -70,6 +71,7 @@ describe("loader", () => {
 
       [err, source] = callback.getCall(3).args;
 
+      expect(err).to.be.null;
       expect(cleanSource(source)).to.equal(
         "import '/mock/modules/a.js'; import '/mock/modules/b.js'; import '/mock/modules/c.js';"
       );
