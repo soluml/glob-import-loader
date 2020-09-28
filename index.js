@@ -81,14 +81,14 @@ module.exports = async function (source) {
           result += ` var ${obj} = [${modules.reduce(
             (acc, cur) => `${acc}{path:${cur.path},module:${cur.module}}`,
             ""
-          )}]`;
+          )}];`;
         } else {
           result +=
             " var " +
             obj +
             " = [" +
             modules.map(({ module }) => module).join(", ") +
-            "]";
+            "];";
         }
       }
 
@@ -96,7 +96,7 @@ module.exports = async function (source) {
         this.emitWarning('Empty results for "' + match + '"');
       }
 
-      return result;
+      return result.slice(0, -1);
     }
   );
 
