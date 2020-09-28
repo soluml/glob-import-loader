@@ -35,14 +35,43 @@ beforeEach(async () => {
 
 describe("loader", () => {
   describe('import "*.js"', () => {
-    it("should expand glob import files with an alias", async () => {
-      await loader.call(context, 'import "MODULES/*.js*";');
+    it("should expand glob import files", async () => {
+      // Double Quotes
+      await loader.call(context, 'import "./modules/*.js";');
 
-      const [err, source] = callback.getCall(0).args;
+      let [err, source] = callback.getCall(0).args;
 
       expect(err).to.be.null;
       expect(cleanSource(source)).to.equal(
-        `import "/mock/modules/a.js"; import "/mock/modules/a.json"; import "/mock/modules/b.js"; import "/mock/modules/c.js";`
+        'import "/mock/modules/a.js"; import "/mock/modules/b.js"; import "/mock/modules/c.js";'
+      );
+
+      // Double Quotes w/Alias
+      await loader.call(context, 'import "MODULES/*.js";');
+
+      [err, source] = callback.getCall(1).args;
+
+      expect(err).to.be.null;
+      expect(cleanSource(source)).to.equal(
+        'import "/mock/modules/a.js"; import "/mock/modules/b.js"; import "/mock/modules/c.js";'
+      );
+
+      // Single Quotes
+      await loader.call(context, "import './modules/*.js';");
+
+      [err, source] = callback.getCall(2).args;
+
+      expect(cleanSource(source)).to.equal(
+        "import '/mock/modules/a.js'; import '/mock/modules/b.js'; import '/mock/modules/c.js';"
+      );
+
+      // Single Quotes w/Alias
+      await loader.call(context, "import 'MODULES/*.js';");
+
+      [err, source] = callback.getCall(3).args;
+
+      expect(cleanSource(source)).to.equal(
+        "import '/mock/modules/a.js'; import '/mock/modules/b.js'; import '/mock/modules/c.js';"
       );
     });
   });
