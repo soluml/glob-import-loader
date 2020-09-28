@@ -1,6 +1,6 @@
 {
   "name": "glob-import-loader",
-  "version": "1.0.2-alpha",
+  "version": "1.0.3-alpha",
   "description": "Webpack loader that enables glob patterns in ES6 imports.",
   "license": "MIT",
   "main": "index.js",
