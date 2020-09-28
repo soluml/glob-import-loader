@@ -40,8 +40,6 @@ describe("loader", () => {
 
       const [err, source] = callback.getCall(0).args;
 
-      console.log("ASDASD", cleanSource(source));
-
       expect(err).to.be.null;
       expect(cleanSource(source)).to.equal(
         `import "/mock/modules/a.js"; import "/mock/modules/a.json"; import "/mock/modules/b.js"; import "/mock/modules/c.js";`
