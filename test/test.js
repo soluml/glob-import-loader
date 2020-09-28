@@ -170,13 +170,13 @@ describe("loader", () => {
       expect(err).to.be.null;
       expect(cleanSource(source)).to.equal('//@import "/mock/modules/a.scss";');
 
-      await loader.call(context, '// @import "./modules/*.*css";');
+      await loader.call(context, '// @import "./modules/*.{sc,le,c}ss";');
 
       [err, source] = callback.getCall(1).args;
 
       expect(err).to.be.null;
       expect(cleanSource(source)).to.equal(
-        '// @import "/mock/modules/a.scss"; @import "/mock/modules/b.css";'
+        '// @import "/mock/modules/a.scss"; @import "/mock/modules/b.css"; @import "/mock/modules/c.less";'
       );
     });
   });
