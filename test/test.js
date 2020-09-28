@@ -12,7 +12,11 @@ let context = {};
 let callback;
 
 function cleanSource(source) {
-  return replaceAll(source, __dirname, "");
+  return replaceAll(
+    replaceAll(source, __dirname, ""),
+    path.resolve(__dirname, "../node_modules") + "/",
+    ""
+  );
 }
 
 beforeEach(async () => {
@@ -177,6 +181,19 @@ describe("loader", () => {
       expect(err).to.be.null;
       expect(cleanSource(source)).to.equal(
         '// @import "/mock/modules/a.scss"; @import "/mock/modules/b.css"; @import "/mock/modules/c.less";'
+      );
+    });
+  });
+
+  describe("from node_modules", () => {
+    it("should load node_modules files", async () => {
+      await loader.call(context, 'import "THIS_IS_A_FAKE/*.js";');
+
+      let [err, source] = callback.getCall(0).args;
+
+      expect(err).to.be.null;
+      expect(cleanSource(source)).to.equal(
+        'import "THIS_IS_A_FAKE/a.js"; import "THIS_IS_A_FAKE/b.js";'
       );
     });
   });
