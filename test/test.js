@@ -149,4 +149,35 @@ describe("loader", () => {
       );
     });
   });
+
+  describe("import from *.scss", () => {
+    it("should import glob scss files", async () => {
+      await loader.call(context, '@import "MODULES/*.{s,}css";');
+
+      let [err, source] = callback.getCall(0).args;
+
+      expect(err).to.be.null;
+      expect(cleanSource(source)).to.equal(
+        '@import "/mock/modules/a.scss"; @import "/mock/modules/b.css";'
+      );
+    });
+
+    it("should honor comment after expanding glob import files", async () => {
+      await loader.call(context, '//@import "./modules/*.scss";');
+
+      let [err, source] = callback.getCall(0).args;
+
+      expect(err).to.be.null;
+      expect(cleanSource(source)).to.equal('//@import "/mock/modules/a.scss";');
+
+      await loader.call(context, '// @import "./modules/*.*css";');
+
+      [err, source] = callback.getCall(1).args;
+
+      expect(err).to.be.null;
+      expect(cleanSource(source)).to.equal(
+        '// @import "/mock/modules/a.scss"; @import "/mock/modules/b.css";'
+      );
+    });
+  });
 });
