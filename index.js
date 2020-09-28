@@ -14,21 +14,32 @@ module.exports = async function (source) {
   const importFiles = /import +([\'\"])(.*?)\1/gm;
   const importSass = /@import +([\'\"])(.*?)\1/gm;
   const options = Object.assign({}, loaderUtils.getOptions(this));
+  const basePath = path.dirname(this.resourcePath);
   const resolvePaths = (pathToResolve) => {
     return new Promise((resolve, reject) => {
       enhancedResolver.create(options.resolve || {})(
         this,
-        path.dirname(this.resourcePath),
+        basePath,
         pathToResolve,
         (err, result) => {
           if (err && !result) {
             if (Array.isArray(err.missing)) {
-              resolve(
-                err.missing
-                  .filter(glob.hasMagic)
-                  .map((M) => glob.sync(M))
-                  .flat()
-              );
+              let filteredMissing = err.missing
+                .filter(glob.hasMagic)
+                .map((M) => glob.sync(M))
+                .flat();
+
+              if (!filteredMissing.length) {
+                filteredMissing = glob.sync(
+                  path.resolve(basePath, pathToResolve)
+                );
+
+                if (!filteredMissing.length) {
+                  callback(new Error("Could not resolve the wildcard path."));
+                }
+              }
+
+              resolve(filteredMissing);
             } else {
               callback(new Error("Could not resolve the wildcard path."));
             }
