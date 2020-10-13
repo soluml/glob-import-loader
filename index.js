@@ -17,17 +17,26 @@ module.exports = async function (source) {
   const basePath = path.dirname(this.resourcePath);
   const resolvePaths = (pathToResolve) => {
     return new Promise((resolve, reject) => {
+      const tempMissing = [];
+      const resolverContext = {
+        missingDependencies: {
+          add(path) {
+            tempMissing.push(path);
+          },
+        },
+      };
+
       enhancedResolver.create(options.resolve || {})(
         this,
         basePath,
         pathToResolve,
+        resolverContext,
         (err, result) => {
           if (err && !result) {
-            if (Array.isArray(err.missing)) {
-              let filteredMissing = err.missing
-                .filter(glob.hasMagic)
-                .map((M) => glob.sync(M))
-                .flat();
+            const missing = [...new Set(tempMissing)].filter(glob.hasMagic);
+
+            if (Array.isArray(missing)) {
+              let filteredMissing = missing.map((M) => glob.sync(M)).flat();
 
               if (!filteredMissing.length) {
                 filteredMissing = glob.sync(
