@@ -135,7 +135,7 @@ describe("loader", () => {
       let [err, source] = callback.getCall(0).args;
 
       expect(cleanSource(source)).to.equal(
-        'import * as modules0 from "/mock/modules/a.js"; import * as modules1 from "/mock/modules/b.js"; import * as modules2 from "/mock/modules/c.js"; var modules = [{path:"/mock/modules/a.js",module:modules0}{path:"/mock/modules/b.js",module:modules1}{path:"/mock/modules/c.js",module:modules2}];'
+        'import * as modules0 from "/mock/modules/a.js"; import * as modules1 from "/mock/modules/b.js"; import * as modules2 from "/mock/modules/c.js"; var modules = [{path:"/mock/modules/a.js",module:modules0},{path:"/mock/modules/b.js",module:modules1},{path:"/mock/modules/c.js",module:modules2}];'
       );
 
       getOptions.callsFake(() => ({ includePaths: true }));

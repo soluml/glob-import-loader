@@ -101,10 +101,9 @@ module.exports = async function (source) {
 
         if (result && withModules && options.srcArray) {
           if (options.includePaths) {
-            result += ` var ${obj} = [${modules.reduce(
-              (acc, cur) => `${acc}{path:${cur.path},module:${cur.module}}`,
-              ""
-            )}];`;
+            result += ` var ${obj} = [${modules
+              .map((mod) => `{path:${mod.path},module:${mod.module}}`)
+              .join(",")}];`;
           } else {
             result +=
               " var " +
