@@ -72,49 +72,36 @@ module.exports = async function (source) {
           return match;
         }
 
-        const modules = [];
+        const paths = [];
         const globRelativePath = filename.match(/!?([^!]*)$/)[1];
         const prefix = filename.replace(globRelativePath, "");
-        let withModules = false;
 
         let result = (await resolvePaths(globRelativePath))
           .map((file, index) => {
             const fileName = quote + prefix + file + quote;
             let importString;
+            let moduleName;
 
             if (match.match(importSass)) {
-              importString = "@import " + fileName;
+              importString = `@import ${fileName};`;
             } else if (match.match(importModules)) {
-              const moduleName = obj + index;
-              modules.push({ path: fileName, module: moduleName });
-              withModules = true;
-              importString = "import * as " + moduleName + " from " + fileName;
+              moduleName = obj + index;
+              importString = `import * as ${moduleName} from ${fileName};`;
             } else if (match.match(importFiles)) {
-              importString = "import " + fileName;
+              importString = `import ${fileName};`;
             } else {
               this.emitWarning('Unknown import: "' + match + '"');
             }
 
-            return importString + ";";
+            paths.push({ path: fileName, module: moduleName, importString });
+
+            return importString;
           })
           .join(" ");
 
-        if (result && withModules && options.srcArray) {
-          if (options.includePaths) {
-            result += ` var ${obj} = [${modules
-              .map((mod) => `{path:${mod.path},module:${mod.module}}`)
-              .join(",")}];`;
-          } else {
-            result +=
-              " var " +
-              obj +
-              " = [" +
-              modules.map(({ module }) => module).join(", ") +
-              "];";
-          }
-        }
-
-        if (!result) {
+        if (result && paths.length && typeof options.banner === "function") {
+          result += options.banner(paths, obj);
+        } else if (!result) {
           this.emitWarning('Empty results for "' + match + '"');
         }
 

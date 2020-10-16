@@ -116,7 +116,13 @@ describe("loader", () => {
     });
 
     it("should expand glob import files and add a global variable as an array", async () => {
-      getOptions.callsFake(() => ({ srcArray: true }));
+      getOptions.callsFake(() => ({
+        banner(paths, varname) {
+          return ` var ${varname} = [${paths
+            .map(({ module }) => module)
+            .join(", ")}];`;
+        },
+      }));
 
       await loader.call(context, 'import modules from "./modules/*.js";');
 
@@ -128,7 +134,13 @@ describe("loader", () => {
     });
 
     it("should expand glob import files and add a global variable as an object", async () => {
-      getOptions.callsFake(() => ({ srcArray: true, includePaths: true }));
+      getOptions.callsFake(() => ({
+        banner(paths, varname) {
+          return ` var ${varname} = [${paths
+            .map((mod) => `{path:${mod.path},module:${mod.module}}`)
+            .join(",")}];`;
+        },
+      }));
 
       await loader.call(context, 'import modules from "./modules/*.js";');
 
@@ -138,7 +150,7 @@ describe("loader", () => {
         'import * as modules0 from "/mock/modules/a.js"; import * as modules1 from "/mock/modules/b.js"; import * as modules2 from "/mock/modules/c.js"; var modules = [{path:"/mock/modules/a.js",module:modules0},{path:"/mock/modules/b.js",module:modules1},{path:"/mock/modules/c.js",module:modules2}];'
       );
 
-      getOptions.callsFake(() => ({ includePaths: true }));
+      getOptions.callsFake(() => ({}));
 
       await loader.call(context, 'import modules from "./modules/*.js";');
 
