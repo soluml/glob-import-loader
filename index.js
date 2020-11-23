@@ -100,7 +100,7 @@ module.exports = async function (source) {
           .join(" ");
 
         if (result && paths.length && typeof options.banner === "function") {
-          result += options.banner(paths, obj);
+          result += options.banner(paths, obj) || "";
         } else if (!result) {
           this.emitWarning('Empty results for "' + match + '"');
         }
