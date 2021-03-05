@@ -184,7 +184,7 @@ describe("loader", () => {
         '@use "/mock/modules/a.scss"; @use "/mock/modules/b.css";'
       );
 
-      await loader.call(context, '@use "MODULES/*.{s,}css" as c;');
+      await loader.call(context, '@use "MODULES/*.{s,}css" as "c";');
 
       [err, source] = callback.getCall(1).args;
 

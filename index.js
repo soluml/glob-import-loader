@@ -9,12 +9,16 @@ module.exports = async function (source) {
   this.cacheable && this.cacheable(true);
 
   const callback = this.async();
-  const regex = /(?:import|@import|@use|@forward) + ?((\w+) +from )?([\'\"])(.*?);?\3/gm;
+  const regex = /import + ?((\w+) +from )?([\'\"])(.*?);?\3/gm;
   const importModules = /import +(\w+) +from +([\'\"])(.*?)\2/gm;
   const importFiles = /import +([\'\"])(.*?)\1/gm;
+
+  const sassRegex = /@(import|use|forward) +( ?([\'\"])(.*?)\2 *,?)(?: +as +(.*?))?(?: +hide +((?:.*?),)?)? *;/gm;
+
   const importSass = /@import +([\'\"])(.*?)\1/gm;
   const useSass = /@use +([\'\"])(.*?)\1/gm;
   const forwardSass = /@forward +([\'\"])(.*?)\1/gm;
+
   const options = Object.assign({}, loaderUtils.getOptions(this));
   const basePath = path.dirname(this.resourcePath);
   const resolvePaths = (pathToResolve) => {
@@ -65,7 +69,8 @@ module.exports = async function (source) {
   };
 
   try {
-    const updatedSource = await replaceAsync(
+    // Do JS Imports
+    let updatedSource = await replaceAsync(
       source,
       regex,
       async (match, fromStatement, obj, quote, filename) => {
@@ -84,13 +89,7 @@ module.exports = async function (source) {
             let importString;
             let moduleName;
 
-            if (match.match(importSass)) {
-              importString = `@import ${fileName};`;
-            } else if (match.match(useSass)) {
-              importString = `@use ${fileName};`;
-            } else if (match.match(forwardSass)) {
-              importString = `@forward ${fileName};`;
-            } else if (match.match(importModules)) {
+            if (match.match(importModules)) {
               moduleName = obj + index;
               importString = `import * as ${moduleName} from ${fileName};`;
             } else if (match.match(importFiles)) {
@@ -112,6 +111,32 @@ module.exports = async function (source) {
         }
 
         return result.slice(0, -1);
+      }
+    );
+
+    // Do Sass imports
+    updatedSource = await replaceAsync(
+      updatedSource,
+      sassRegex,
+      async (match, atrule, files, quote, p4, prefix, ...rest) => {
+        console.log({ atrule, files, quote, p4, prefix, rest });
+
+        // @import 'foundation';
+        // @import 'foundation/asdasd.scss';
+        // @import '_foundation';
+        // @import 'code', 'lists';
+
+        // @use 'foundation/code';
+        // @use "src/corners", '_bob' as *;
+        // @use "src/corners" as *;
+        // @use "src/corners" as c;
+
+        // @forward "src/list";
+        // @forward "src/list" as list-*;
+        // @forward "src/list" as c hide list-reset, $horizontal-list-gap;
+        // @forward "src/list" hide list-reset, $horizontal-list-gap;
+
+        return match;
       }
     );
 
