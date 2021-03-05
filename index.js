@@ -9,10 +9,12 @@ module.exports = async function (source) {
   this.cacheable && this.cacheable(true);
 
   const callback = this.async();
-  const regex = /@?import + ?((\w+) +from )?([\'\"])(.*?);?\3/gm;
+  const regex = /(?:import|@import|@use|@forward) + ?((\w+) +from )?([\'\"])(.*?);?\3/gm;
   const importModules = /import +(\w+) +from +([\'\"])(.*?)\2/gm;
   const importFiles = /import +([\'\"])(.*?)\1/gm;
   const importSass = /@import +([\'\"])(.*?)\1/gm;
+  const useSass = /@use +([\'\"])(.*?)\1/gm;
+  const forwardSass = /@forward +([\'\"])(.*?)\1/gm;
   const options = Object.assign({}, loaderUtils.getOptions(this));
   const basePath = path.dirname(this.resourcePath);
   const resolvePaths = (pathToResolve) => {
@@ -84,6 +86,10 @@ module.exports = async function (source) {
 
             if (match.match(importSass)) {
               importString = `@import ${fileName};`;
+            } else if (match.match(useSass)) {
+              importString = `@use ${fileName};`;
+            } else if (match.match(forwardSass)) {
+              importString = `@forward ${fileName};`;
             } else if (match.match(importModules)) {
               moduleName = obj + index;
               importString = `import * as ${moduleName} from ${fileName};`;
