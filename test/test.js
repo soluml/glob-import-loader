@@ -183,6 +183,15 @@ describe("loader", () => {
       expect(cleanSource(source)).to.equal(
         '@use "/mock/modules/a.scss"; @use "/mock/modules/b.css";'
       );
+
+      await loader.call(context, '@use "MODULES/*.{s,}css" as c;');
+
+      [err, source] = callback.getCall(1).args;
+
+      expect(err).to.be.null;
+      expect(cleanSource(source)).to.equal(
+        '@use "/mock/modules/a.scss" as c0; @use "/mock/modules/b.css" as c1;'
+      );
     });
 
     it("should forward glob scss files", async () => {
@@ -193,6 +202,15 @@ describe("loader", () => {
       expect(err).to.be.null;
       expect(cleanSource(source)).to.equal(
         '@forward "/mock/modules/a.scss"; @forward "/mock/modules/b.css";'
+      );
+
+      await loader.call(context, '@forward "MODULES/*.{s,}css" as c;');
+
+      [err, source] = callback.getCall(1).args;
+
+      expect(err).to.be.null;
+      expect(cleanSource(source)).to.equal(
+        '@forward "/mock/modules/a.scss" as c0; @forward "/mock/modules/b.css" as c1;'
       );
     });
 
