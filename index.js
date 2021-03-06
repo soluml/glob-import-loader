@@ -118,8 +118,26 @@ module.exports = async function (source) {
     updatedSource = await replaceAsync(
       updatedSource,
       sassRegex,
-      async (match, atrule, files, quote, p4, prefix, ...rest) => {
-        console.log({ atrule, files, quote, p4, prefix, rest });
+      async (match, atrule, filesStr, quote, p4, prefix, ...rest) => {
+        const fileNames = filesStr
+          .split(",")
+          .map((file) => file.trim().slice(1, -1));
+
+        // If there are no wildcards, return early
+        if (!fileNames.some((fileName) => glob.hasMagic(filename))) {
+          return match;
+        }
+
+        console.log({ atrule, fileNames, quote, p4, prefix, rest });
+
+        switch (atrule) {
+          case "import":
+            break;
+          case "use":
+            break;
+          case "forward":
+            break;
+        }
 
         // @import 'foundation';
         // @import 'foundation/asdasd.scss';
