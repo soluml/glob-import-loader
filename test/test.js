@@ -224,6 +224,28 @@ describe("loader", () => {
     });
   });
 
+  describe("@forward from *.scss", () => {
+    it("should forward glob scss files", async () => {
+      await loader.call(context, '@forward "MODULES/*.{s,}css" as C;');
+
+      let [err, source] = callback.getCall(0).args;
+
+      expect(err).to.be.null;
+      expect(cleanSource(source)).to.equal(
+        '@forward "/mock/modules/a.scss" as C0; @forward "/mock/modules/b.css" as C1;'
+      );
+
+      await loader.call(context, '@forward "MODULES/*.{s,}css";');
+
+      [err, source] = callback.getCall(1).args;
+
+      expect(err).to.be.null;
+      expect(cleanSource(source)).to.equal(
+        '@forward "/mock/modules/a.scss"; @forward "/mock/modules/b.css";'
+      );
+    });
+  });
+
   describe("from node_modules", () => {
     it("should load node_modules files", async () => {
       getOptions.callsFake(() => ({

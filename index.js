@@ -123,36 +123,18 @@ module.exports = async function (source) {
           return match;
         }
 
-        // // CHECK!!!!!
-
-        // @use 'foundation/code';
-        // @use "src/corners" as *;
-        // @use "src/corners" as c;
-
-        // @forward "src/list";
-        // @forward "src/list" as list-*;
-        // @forward "src/list" as c hide list-reset, $horizontal-list-gap;
-        // @forward "src/list" hide list-reset, $horizontal-list-gap;
-
         const paths = [];
         let result = (await resolvePaths(globRelativePath))
           .map((file, index) => {
             const fileName = quote + file + quote;
             let importString;
             let moduleName;
-            // console.log({ match, file, index, quote, p4, prefix, rest });
 
-            switch (atrule) {
-              case "use":
-                if (prefix) {
-                  moduleName = prefix === "*" ? prefix : prefix + index;
-                  importString = `@use ${fileName} as ${moduleName};`;
-                } else {
-                  importString = `@use ${fileName};`;
-                }
-                break;
-              case "forward":
-                break;
+            if (prefix) {
+              moduleName = prefix === "*" ? prefix : prefix + index;
+              importString = `@${atrule} ${fileName} as ${moduleName};`;
+            } else {
+              importString = `@${atrule} ${fileName};`;
             }
 
             paths.push({ path: fileName, module: moduleName, importString });
