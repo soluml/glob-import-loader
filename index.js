@@ -13,7 +13,7 @@ module.exports = async function (source) {
   const importModules = /import +(\w+) +from +([\'\"])(.*?)\2/gm;
   const importFiles = /import +([\'\"])(.*?)\1/gm;
   const importSass = /@import +([\'\"])(.*?)\1/gm;
-  const sassSpecificRegex = /@(use|forward) +( ?([\'\"])(.*?)\2 *)(?: +as +(.*?))?(?: +hide +((?:.*?),)?)? *;/gm;
+  const sassSpecificRegex = /@(use|forward) +( ?([\'\"])(.*?)\2 *)(?: +as +(.*?))? *;/gm;
   const options = Object.assign({}, loaderUtils.getOptions(this));
   const basePath = path.dirname(this.resourcePath);
   const resolvePaths = (pathToResolve) => {

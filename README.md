@@ -11,6 +11,10 @@ _Inspired by [webpack-import-glob-loader](https://github.com/fred104/webpack-imp
 
 1. `?`, `+`, and `!` globbing characters have issues as they're currently incompatible with Enhanced Loader. Looking for workarounds!
 
+## Notes on Sass's `@use` and `@forward`
+
+@use's configuration syntax (`with`) and @forward's configuration syntax (`hide`) is not supported and will be ignored. These should not be used in a wildcard fashion.
+
 ---
 
 ```js
@@ -76,14 +80,25 @@ Expands into
 ```
 
 ```scss
-@use "./foo/**/*.scss";
+@use "./foo/**/*.scss" as *;
 ```
 
 Expands into
 
 ```scss
-@use "./foo/1.scss";
-@use "./foo/bar/2.scss";
+@use "./foo/1.scss" as *;
+@use "./foo/bar/2.scss" as *;
+```
+
+```scss
+@forward "./foo/**/*.scss" as C;
+```
+
+Expands into
+
+```scss
+@forward "./foo/1.scss" as C0;
+@forward "./foo/bar/2.scss" as C1;
 ```
 
 ---
