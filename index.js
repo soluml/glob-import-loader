@@ -124,10 +124,6 @@ module.exports = async function (source) {
         }
 
         // // CHECK!!!!!
-        // @import 'foundation';
-        // @import 'foundation/asdasd.scss';
-        // @import '_foundation';
-        // @import 'code', 'lists';
 
         // @use 'foundation/code';
         // @use "src/corners", '_bob' as *;
@@ -141,8 +137,7 @@ module.exports = async function (source) {
 
         let result = (await resolvePaths(globRelativePath)).map(
           (file, index) => {
-            // console.log({ atrule, fileName, quote, p4, prefix, rest });
-            console.log({ file, index });
+            console.log({ file, index, quote, p4, prefix, rest });
 
             switch (atrule) {
               case "use":

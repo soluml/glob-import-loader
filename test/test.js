@@ -195,14 +195,26 @@ describe("loader", () => {
 
   describe.only("@use from *.scss", () => {
     it("should use glob scss files", async () => {
-      await loader.call(context, '@use "MODULES/*.{s,}css";');
+      await loader.call(context, '@use "MODULES/*.{s,}css" as *;');
 
       let [err, source] = callback.getCall(0).args;
 
       expect(err).to.be.null;
-      expect(cleanSource(source)).to.equal(
-        '@use "/mock/modules/a.scss"; @use "/mock/modules/b.css";'
-      );
+      expect(cleanSource(source)).to.equal("TEST");
+
+      await loader.call(context, '@use "MODULES/*.{s,}css" as C;');
+
+      [err, source] = callback.getCall(1).args;
+
+      expect(err).to.be.null;
+      expect(cleanSource(source)).to.equal("TEST");
+
+      await loader.call(context, '@use "MODULES/*.{s,}css";');
+
+      [err, source] = callback.getCall(2).args;
+
+      expect(err).to.be.null;
+      expect(cleanSource(source)).to.equal("TEST");
     });
   });
 
