@@ -13,7 +13,7 @@ _Inspired by [webpack-import-glob-loader](https://github.com/fred104/webpack-imp
 
 ## Notes on Sass's `@use` and `@forward`
 
-@use's configuration syntax (`with`) and @forward's configuration syntax (`hide`) is not supported and will be ignored. These should not be used in a wildcard fashion.
+`@use`'s configuration syntax [(`with`)](https://sass-lang.com/documentation/at-rules/use#configuration) and `@forward`'s configuration syntax [(`hide`)](https://sass-lang.com/documentation/at-rules/forward#controlling-visibility) is not supported and will be ignored. These should not be added in a wildcard fashion and should instead be set individually on each module.
 
 ---
 
