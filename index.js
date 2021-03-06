@@ -117,6 +117,7 @@ module.exports = async function (source) {
       sassSpecificRegex,
       async (match, atrule, fileStr, quote, p4, prefix, ...rest) => {
         const globRelativePath = fileStr.trim().slice(1, -1);
+        const nonStarPrefix = prefix !== "*" ? prefix : undefined;
 
         // If there are no wildcards, return early
         if (!glob.hasMagic(globRelativePath)) {
@@ -127,15 +128,10 @@ module.exports = async function (source) {
         let result = (await resolvePaths(globRelativePath))
           .map((file, index) => {
             const fileName = quote + file + quote;
-            let importString;
-            let moduleName;
-
-            if (prefix) {
-              moduleName = prefix === "*" ? prefix : prefix + index;
-              importString = `@${atrule} ${fileName} as ${moduleName};`;
-            } else {
-              importString = `@${atrule} ${fileName};`;
-            }
+            const moduleName = nonStarPrefix ? prefix + index : prefix;
+            const importString = `@${atrule} ${fileName}${
+              prefix ? ` as ${moduleName}` : ``
+            };`;
 
             paths.push({ path: fileName, module: moduleName, importString });
 
@@ -144,7 +140,7 @@ module.exports = async function (source) {
           .join(" ");
 
         if (result && paths.length && typeof options.banner === "function") {
-          result += options.banner(paths, obj) || "";
+          result += options.banner(paths, nonStarPrefix) || "";
         } else if (!result) {
           this.emitWarning('Empty results for "' + match + '"');
         }
