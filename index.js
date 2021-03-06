@@ -9,16 +9,11 @@ module.exports = async function (source) {
   this.cacheable && this.cacheable(true);
 
   const callback = this.async();
-  const regex = /import + ?((\w+) +from )?([\'\"])(.*?);?\3/gm;
+  const regex = /@?import + ?((\w+) +from )?([\'\"])(.*?);?\3/gm;
   const importModules = /import +(\w+) +from +([\'\"])(.*?)\2/gm;
   const importFiles = /import +([\'\"])(.*?)\1/gm;
-
-  const sassRegex = /@(import|use|forward) +( ?([\'\"])(.*?)\2 *,?)(?: +as +(.*?))?(?: +hide +((?:.*?),)?)? *;/gm;
-
   const importSass = /@import +([\'\"])(.*?)\1/gm;
-  const useSass = /@use +([\'\"])(.*?)\1/gm;
-  const forwardSass = /@forward +([\'\"])(.*?)\1/gm;
-
+  const sassSpecificRegex = /@(use|forward) +( ?([\'\"])(.*?)\2 *)(?: +as +(.*?))?(?: +hide +((?:.*?),)?)? *;/gm;
   const options = Object.assign({}, loaderUtils.getOptions(this));
   const basePath = path.dirname(this.resourcePath);
   const resolvePaths = (pathToResolve) => {
@@ -69,7 +64,7 @@ module.exports = async function (source) {
   };
 
   try {
-    // Do JS Imports
+    // Handle  Imports
     let updatedSource = await replaceAsync(
       source,
       regex,
@@ -89,7 +84,9 @@ module.exports = async function (source) {
             let importString;
             let moduleName;
 
-            if (match.match(importModules)) {
+            if (match.match(importSass)) {
+              importString = `@import ${fileName};`;
+            } else if (match.match(importModules)) {
               moduleName = obj + index;
               importString = `import * as ${moduleName} from ${fileName};`;
             } else if (match.match(importFiles)) {
@@ -114,31 +111,19 @@ module.exports = async function (source) {
       }
     );
 
-    // Do Sass imports
+    // Do Sass specific Use/Forward imports
     updatedSource = await replaceAsync(
       updatedSource,
-      sassRegex,
-      async (match, atrule, filesStr, quote, p4, prefix, ...rest) => {
-        const fileNames = filesStr
-          .split(",")
-          .map((file) => file.trim().slice(1, -1));
+      sassSpecificRegex,
+      async (match, atrule, fileStr, quote, p4, prefix, ...rest) => {
+        const globRelativePath = fileStr.trim().slice(1, -1);
 
         // If there are no wildcards, return early
-        if (!fileNames.some((fileName) => glob.hasMagic(filename))) {
+        if (!glob.hasMagic(globRelativePath)) {
           return match;
         }
 
-        console.log({ atrule, fileNames, quote, p4, prefix, rest });
-
-        switch (atrule) {
-          case "import":
-            break;
-          case "use":
-            break;
-          case "forward":
-            break;
-        }
-
+        // // CHECK!!!!!
         // @import 'foundation';
         // @import 'foundation/asdasd.scss';
         // @import '_foundation';
@@ -153,6 +138,20 @@ module.exports = async function (source) {
         // @forward "src/list" as list-*;
         // @forward "src/list" as c hide list-reset, $horizontal-list-gap;
         // @forward "src/list" hide list-reset, $horizontal-list-gap;
+
+        let result = (await resolvePaths(globRelativePath)).map(
+          (file, index) => {
+            // console.log({ atrule, fileName, quote, p4, prefix, rest });
+            console.log({ file, index });
+
+            switch (atrule) {
+              case "use":
+                break;
+              case "forward":
+                break;
+            }
+          }
+        );
 
         return match;
       }
