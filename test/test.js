@@ -193,28 +193,34 @@ describe("loader", () => {
     });
   });
 
-  describe.only("@use from *.scss", () => {
+  describe("@use from *.scss", () => {
     it("should use glob scss files", async () => {
       await loader.call(context, '@use "MODULES/*.{s,}css" as *;');
 
       let [err, source] = callback.getCall(0).args;
 
       expect(err).to.be.null;
-      expect(cleanSource(source)).to.equal("TEST");
+      expect(cleanSource(source)).to.equal(
+        '@use "/mock/modules/a.scss" as *; @use "/mock/modules/b.css" as *;'
+      );
 
       await loader.call(context, '@use "MODULES/*.{s,}css" as C;');
 
       [err, source] = callback.getCall(1).args;
 
       expect(err).to.be.null;
-      expect(cleanSource(source)).to.equal("TEST");
+      expect(cleanSource(source)).to.equal(
+        '@use "/mock/modules/a.scss" as C0; @use "/mock/modules/b.css" as C1;'
+      );
 
       await loader.call(context, '@use "MODULES/*.{s,}css";');
 
       [err, source] = callback.getCall(2).args;
 
       expect(err).to.be.null;
-      expect(cleanSource(source)).to.equal("TEST");
+      expect(cleanSource(source)).to.equal(
+        '@use "/mock/modules/a.scss"; @use "/mock/modules/b.css";'
+      );
     });
   });
 

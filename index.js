@@ -126,7 +126,6 @@ module.exports = async function (source) {
         // // CHECK!!!!!
 
         // @use 'foundation/code';
-        // @use "src/corners", '_bob' as *;
         // @use "src/corners" as *;
         // @use "src/corners" as c;
 
@@ -135,20 +134,40 @@ module.exports = async function (source) {
         // @forward "src/list" as c hide list-reset, $horizontal-list-gap;
         // @forward "src/list" hide list-reset, $horizontal-list-gap;
 
-        let result = (await resolvePaths(globRelativePath)).map(
-          (file, index) => {
-            console.log({ file, index, quote, p4, prefix, rest });
+        const paths = [];
+        let result = (await resolvePaths(globRelativePath))
+          .map((file, index) => {
+            const fileName = quote + file + quote;
+            let importString;
+            let moduleName;
+            // console.log({ match, file, index, quote, p4, prefix, rest });
 
             switch (atrule) {
               case "use":
+                if (prefix) {
+                  moduleName = prefix === "*" ? prefix : prefix + index;
+                  importString = `@use ${fileName} as ${moduleName};`;
+                } else {
+                  importString = `@use ${fileName};`;
+                }
                 break;
               case "forward":
                 break;
             }
-          }
-        );
 
-        return match;
+            paths.push({ path: fileName, module: moduleName, importString });
+
+            return importString;
+          })
+          .join(" ");
+
+        if (result && paths.length && typeof options.banner === "function") {
+          result += options.banner(paths, obj) || "";
+        } else if (!result) {
+          this.emitWarning('Empty results for "' + match + '"');
+        }
+
+        return result;
       }
     );
 
