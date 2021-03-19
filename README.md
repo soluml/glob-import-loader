@@ -259,6 +259,9 @@ import cmpts from "JS/**/*.cmpt.jsx";
 **entry.js** (output)
 
 ```
+... webpack import statements ...
+
+// output via `banner` function
 var cmpts = {
   "loader": _webpack_path_to_module__,
   "autocomplete": _webpack_path_to_module__,
