@@ -142,3 +142,130 @@ import "./**/*.js";
 // index.js
 import "glob-import-loader!foo/bar.js";
 ```
+
+## Options
+
+|           Name            |     Type     |   Default   | Description                                                                                                                    |
+| :-----------------------: | :----------: | :---------: | :----------------------------------------------------------------------------------------------------------------------------- |
+| **[`resolve`](#resolve)** |  `{Object}`  |    `{}`     | Your Webpack resolution ([`resolve`](https://webpack.js.org/configuration/resolve/)) rules.                                    |
+|  **[`banner`](#banner)**  | `{Function}` | `undefined` | An optional function for how wildcard variables should display. Useful for things such as HMR Where names must be predictable. |
+
+### `resolve`
+
+Type: `Object`
+Default: `{}` (or default webpack resolution rules)
+
+This object should reference your resolution object in your _webpack.config.js_ configuration.
+
+Example:
+
+**webpack.config.js**
+
+```js
+const resolve = {
+  alias: {
+    Sprite: path.resolve(__dirname, "src/assets/sprite"),
+    CSS: path.resolve(__dirname, "src/css"),
+    JS: path.resolve(__dirname, "src/js"),
+  },
+  modules: [path.resolve(__dirname, "node_modules")],
+  extensions: [".js", ".jsx", ".ts", ".tsx", ".json"],
+  plugins: [new DirectoryNamedWebpackPlugin(true)],
+};
+
+module.exports = {
+  target: 'web',
+  resolve,
+  entry: { ... }
+  module: {
+    rules: [
+      {
+        test: /\.(j|t)sx?$/,
+        include: [path.resolve(__dirname, 'src')],
+        use: [
+          'babel-loader',
+          {
+            loader: 'glob-import-loader',
+            options: {
+              resolve,
+            },
+          },
+        ],
+      },
+    ],
+  },
+  ... other settings ...
+};
+```
+
+### `banner`
+
+Type: `Function`
+Default: `undefined`
+
+This function gives you granular control over how "import" variables are output in the code should you need it. Can be useful when needing predictable variable names, such as with HMR. The `banner` function should return serialized JavaScript. The banner function receives two arguments:
+
+1. `paths` - An array of objects with the following structure:
+   | Name | Description |
+   | :-----------------------: | :----------------------------------------------------------------------------------------------------------------------------- |
+   | **`path`** | The path to the imported file. |
+   | **`module`** | Variable reference to the value exported by the file. |
+   | **`importString`** | The import string use by Webpack to import the file |
+
+2. `varname` - The variable name used when importing.
+
+#### `banner` Example:
+
+**webpack.config.js**
+
+```js
+module.exports = {
+  module: {
+    rules: [
+      {
+        test: /\.(j|t)sx?$/,
+        include: [path.resolve(__dirname, "src")],
+        use: [
+          "babel-loader",
+          {
+            loader: "glob-import-loader",
+            options: {
+              banner(paths, varname) {
+                if (varname) {
+                  return `var ${varname} = {${paths
+                    .map(
+                      ({ path: fn, module }) => `
+                      "${path.basename(fn).split(".")[0]}":${module}
+                    `
+                    )
+                    .join(",")}};`;
+                }
+              },
+            },
+          },
+        ],
+      },
+    ],
+  },
+};
+```
+
+**entry.js** (source)
+
+```js
+import cmpts from "JS/**/*.cmpt.jsx";
+```
+
+**entry.js** (output)
+
+```
+... webpack import statements ...
+
+// output via `banner` function
+var cmpts = {
+  "loader": _webpack_path_to_module__,
+  "autocomplete": _webpack_path_to_module__,
+  "searchresults": _webpack_path_to_module__,
+  "searchsuggestions": _webpack_path_to_module__
+};
+```
