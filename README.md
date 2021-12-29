@@ -274,7 +274,7 @@ var cmpts = {
 ### `ignoreNodeModules`
 
 Type: `Boolean`
-Default: `true` unless "node_modules" is used within the import string, then `false`
+Default: `true` unless "node_modules" is used within the import string, then `false`. Can be set manually to either true or false in which case that value is respected.
 
 #### `ignoreNodeModules` Example:
 
