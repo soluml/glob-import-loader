@@ -77,6 +77,18 @@ describe("loader", () => {
       );
     });
 
+    it("the source file for a glob import should not import itself", async () => {
+      await loader.call(
+        { ...context, resourcePath: path.resolve(__dirname, "test.js") },
+        'import "./*.js";'
+      );
+
+      let [err, source] = callback.getCall(0).args;
+
+      expect(err).to.be.null;
+      expect(cleanSource(source)).to.equal(";");
+    });
+
     it("should honor comment after expanding glob import files", async () => {
       await loader.call(context, '//import "./modules/*.js";');
 

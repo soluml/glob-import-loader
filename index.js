@@ -35,14 +35,18 @@ module.exports = async function (source) {
         (err, result) => {
           if (err && !result) {
             const missing = [...new Set(tempMissing)].filter(glob.hasMagic);
+            const selfFilter = (M) => M !== this.resourcePath;
 
             if (Array.isArray(missing)) {
-              let filteredMissing = missing.map((M) => glob.sync(M)).flat();
+              let filteredMissing = missing
+                .map((M) => glob.sync(M))
+                .flat()
+                .filter(selfFilter);
 
               if (!filteredMissing.length) {
-                filteredMissing = glob.sync(
-                  path.resolve(basePath, pathToResolve)
-                );
+                filteredMissing = glob
+                  .sync(path.resolve(basePath, pathToResolve))
+                  .filter(selfFilter);
 
                 if (!filteredMissing.length) {
                   this.emitWarning(
