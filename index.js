@@ -5,6 +5,8 @@ const loaderUtils = require("loader-utils");
 const enhancedResolver = require("enhanced-resolve");
 require("array-flat-polyfill");
 
+const NODE_MODULES_STR = "/node_modules/";
+
 module.exports = async function (source) {
   this.cacheable && this.cacheable(true);
 
@@ -13,8 +15,12 @@ module.exports = async function (source) {
   const importModules = /import +(\w+) +from +([\'\"])(.*?)\2/gm;
   const importFiles = /import +([\'\"])(.*?)\1/gm;
   const importSass = /@import +([\'\"])(.*?)\1/gm;
-  const sassSpecificRegex = /@(use|forward) +( ?([\'\"])(.*?)\2 *)(?: +as +(.*?))? *;/gm;
-  const options = Object.assign({}, loaderUtils.getOptions(this));
+  const sassSpecificRegex =
+    /@(use|forward) +( ?([\'\"])(.*?)\2 *)(?: +as +(.*?))? *;/gm;
+  const options = Object.assign(
+    { ignoreNodeModules: !source.includes(NODE_MODULES_STR) },
+    loaderUtils.getOptions(this)
+  );
   const basePath = path.dirname(this.resourcePath);
   const resolvePaths = (pathToResolve) => {
     return new Promise((resolve, reject) => {
@@ -35,18 +41,20 @@ module.exports = async function (source) {
         (err, result) => {
           if (err && !result) {
             const missing = [...new Set(tempMissing)].filter(glob.hasMagic);
-            const selfFilter = (M) => M !== this.resourcePath;
+            const missingFilter = options.ignoreNodeModules
+              ? (M) => M !== this.resourcePath && !M.includes(NODE_MODULES_STR)
+              : (M) => M !== this.resourcePath;
 
             if (Array.isArray(missing)) {
               let filteredMissing = missing
                 .map((M) => glob.sync(M))
                 .flat()
-                .filter(selfFilter);
+                .filter(missingFilter);
 
               if (!filteredMissing.length) {
                 filteredMissing = glob
                   .sync(path.resolve(basePath, pathToResolve))
-                  .filter(selfFilter);
+                  .filter(missingFilter);
 
                 if (!filteredMissing.length) {
                   this.emitWarning(

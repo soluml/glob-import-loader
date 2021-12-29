@@ -77,7 +77,7 @@ describe("loader", () => {
       );
     });
 
-    it("the source file for a glob import should not import itself", async () => {
+    it("the resourcePath for a glob import should not import itself", async () => {
       await loader.call(
         { ...context, resourcePath: path.resolve(__dirname, "test.js") },
         'import "./*.js";'
@@ -87,6 +87,17 @@ describe("loader", () => {
 
       expect(err).to.be.null;
       expect(cleanSource(source)).to.equal(";");
+    });
+
+    it("node modules should not be imported by default unless `node_modules` is present in source", async () => {
+      await loader.call(context, 'import "../../**/*.js";');
+
+      let [err, source] = callback.getCall(0).args;
+
+      expect(err).to.be.null;
+      expect(cleanSource(source)).to.equal(
+        `import "/home/solum/projects/glob-import-loader/package.json"; import "/home/solum/projects/glob-import-loader/index.js"; import "/mock/modules/a.js"; import "/mock/modules/b.js"; import "/mock/modules/c.js"; import "/mock/modules/fake_module/a.js"; import "/mock/modules/fake_module/b.js"; import "/test.js";`
+      );
     });
 
     it("should honor comment after expanding glob import files", async () => {

@@ -145,10 +145,11 @@ import "glob-import-loader!foo/bar.js";
 
 ## Options
 
-|           Name            |     Type     |   Default   | Description                                                                                                                    |
-| :-----------------------: | :----------: | :---------: | :----------------------------------------------------------------------------------------------------------------------------- |
-| **[`resolve`](#resolve)** |  `{Object}`  |    `{}`     | Your Webpack resolution ([`resolve`](https://webpack.js.org/configuration/resolve/)) rules.                                    |
-|  **[`banner`](#banner)**  | `{Function}` | `undefined` | An optional function for how wildcard variables should display. Useful for things such as HMR Where names must be predictable. |
+|                     Name                      |     Type     |   Default   | Description                                                                                                                                        |
+| :-------------------------------------------: | :----------: | :---------: | :------------------------------------------------------------------------------------------------------------------------------------------------- |
+|           **[`resolve`](#resolve)**           |  `{Object}`  |    `{}`     | Your Webpack resolution ([`resolve`](https://webpack.js.org/configuration/resolve/)) rules.                                                        |
+|            **[`banner`](#banner)**            | `{Function}` | `undefined` | An optional function for how wildcard variables should display. Useful for things such as HMR Where names must be predictable.                     |
+| **[`ignoreNodeModules`](#ignoreNodeModules)** | `{Boolean}`  |  `true`\*   | Determines whether files under `node_modules` should be ignored. By default, they are ignored unless "node_modules" is present in the glob string. |
 
 ### `resolve`
 
@@ -268,4 +269,23 @@ var cmpts = {
   "searchresults": _webpack_path_to_module__,
   "searchsuggestions": _webpack_path_to_module__
 };
+```
+
+### `ignoreNodeModules`
+
+Type: `Boolean`
+Default: `true` unless "node_modules" is used within the import string, then `false`
+
+#### `ignoreNodeModules` Example:
+
+**entry.js** (source)
+
+```js
+import cmpts from "../**/*.js"; // node_modules are not included by default
+```
+
+**entry2.js** (source)
+
+```js
+import cmpts from "../node_modules/**/*.js"; // node_modules are included by default
 ```
