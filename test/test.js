@@ -102,6 +102,14 @@ describe("loader", () => {
       );
     });
 
+    it("node modules should be imported only if specified", async () => {
+      await loader.call(context, 'import "../../node_modules/array-flat-polyfill/*.js";');
+
+      let [err, source] = callback.getCall(0).args;
+      expect(err).to.be.null;
+      expect(cleanSource(source)).to.equal(`import "${ROOT_DIR}/node_modules/array-flat-polyfill/index.js";`);
+    });
+
     it("should honor comment after expanding glob import files", async () => {
       await loader.call(context, '//import "./modules/*.js";');
 
