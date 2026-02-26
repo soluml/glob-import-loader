@@ -15,6 +15,8 @@ function cleanSource(source) {
   return replaceAll(source, __dirname, "");
 }
 
+const ROOT_DIR = path.join(__dirname, '..')
+
 beforeEach(async () => {
   callback = sinon.spy();
 
@@ -96,7 +98,7 @@ describe("loader", () => {
 
       expect(err).to.be.null;
       expect(cleanSource(source)).to.equal(
-        `import "/home/solum/projects/glob-import-loader/package.json"; import "/home/solum/projects/glob-import-loader/index.js"; import "/mock/modules/a.js"; import "/mock/modules/b.js"; import "/mock/modules/c.js"; import "/mock/modules/fake_module/a.js"; import "/mock/modules/fake_module/b.js"; import "/test.js";`
+        `import "${ROOT_DIR}/package.json"; import "${ROOT_DIR}/index.js"; import "/mock/modules/a.js"; import "/mock/modules/b.js"; import "/mock/modules/c.js"; import "/mock/modules/fake_module/a.js"; import "/mock/modules/fake_module/b.js"; import "/test.js";`
       );
     });
 
