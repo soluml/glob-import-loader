@@ -47,7 +47,7 @@ module.exports = async function (source) {
 
             if (Array.isArray(missing)) {
               let filteredMissing = missing
-                .map((M) => glob.sync(M))
+                .map((M) => glob.sync(M).sort())
                 .flat()
                 .filter(missingFilter);
 
