@@ -2,7 +2,6 @@ const path = require("path");
 const chai = require("chai");
 const sinon = require("sinon");
 const loaderUtils = require("loader-utils");
-const replaceAll = require("string.prototype.replaceall");
 const loader = require("../");
 
 const { expect, assert } = chai;
@@ -12,10 +11,10 @@ let context = {};
 let callback;
 
 function cleanSource(source) {
-  return replaceAll(source, __dirname, "");
+  return source.replaceAll(__dirname, "");
 }
 
-const ROOT_DIR = path.join(__dirname, '..')
+const ROOT_DIR = path.join(__dirname, "..");
 
 beforeEach(async () => {
   callback = sinon.spy();
@@ -45,7 +44,7 @@ describe("loader", () => {
 
       expect(err).to.be.null;
       expect(cleanSource(source)).to.equal(
-        'import "/mock/modules/a.js"; import "/mock/modules/b.js"; import "/mock/modules/c.js";'
+        'import "/mock/modules/a.js"; import "/mock/modules/b.js"; import "/mock/modules/c.js";',
       );
 
       // Double Quotes w/Alias
@@ -55,7 +54,7 @@ describe("loader", () => {
 
       expect(err).to.be.null;
       expect(cleanSource(source)).to.equal(
-        'import "/mock/modules/a.js"; import "/mock/modules/b.js"; import "/mock/modules/c.js";'
+        'import "/mock/modules/a.js"; import "/mock/modules/b.js"; import "/mock/modules/c.js";',
       );
 
       // Single Quotes
@@ -65,7 +64,7 @@ describe("loader", () => {
 
       expect(err).to.be.null;
       expect(cleanSource(source)).to.equal(
-        "import '/mock/modules/a.js'; import '/mock/modules/b.js'; import '/mock/modules/c.js';"
+        "import '/mock/modules/a.js'; import '/mock/modules/b.js'; import '/mock/modules/c.js';",
       );
 
       // Single Quotes w/Alias
@@ -75,14 +74,14 @@ describe("loader", () => {
 
       expect(err).to.be.null;
       expect(cleanSource(source)).to.equal(
-        "import '/mock/modules/a.js'; import '/mock/modules/b.js'; import '/mock/modules/c.js';"
+        "import '/mock/modules/a.js'; import '/mock/modules/b.js'; import '/mock/modules/c.js';",
       );
     });
 
     it("the resourcePath for a glob import should not import itself", async () => {
       await loader.call(
         { ...context, resourcePath: path.resolve(__dirname, "test.js") },
-        'import "./*.js";'
+        'import "./*.js";',
       );
 
       let [err, source] = callback.getCall(0).args;
@@ -98,16 +97,21 @@ describe("loader", () => {
 
       expect(err).to.be.null;
       expect(cleanSource(source)).to.equal(
-        `import "${ROOT_DIR}/package.json"; import "${ROOT_DIR}/index.js"; import "/mock/modules/a.js"; import "/mock/modules/b.js"; import "/mock/modules/c.js"; import "/mock/modules/fake_module/a.js"; import "/mock/modules/fake_module/b.js"; import "/test.js";`
+        `import "${ROOT_DIR}/package.json"; import "${ROOT_DIR}/index.js"; import "/mock/modules/a.js"; import "/mock/modules/b.js"; import "/mock/modules/c.js"; import "/mock/modules/fake_module/a.js"; import "/mock/modules/fake_module/b.js"; import "/test.js";`,
       );
     });
 
     it("node modules should be imported only if specified", async () => {
-      await loader.call(context, 'import "../../node_modules/array-flat-polyfill/*.js";');
+      await loader.call(
+        context,
+        'import "../../node_modules/array-flat-polyfill/*.js";',
+      );
 
       let [err, source] = callback.getCall(0).args;
       expect(err).to.be.null;
-      expect(cleanSource(source)).to.equal(`import "${ROOT_DIR}/node_modules/array-flat-polyfill/index.js";`);
+      expect(cleanSource(source)).to.equal(
+        `import "${ROOT_DIR}/node_modules/array-flat-polyfill/index.js";`,
+      );
     });
 
     it("should honor comment after expanding glob import files", async () => {
@@ -117,7 +121,7 @@ describe("loader", () => {
 
       expect(err).to.be.null;
       expect(cleanSource(source)).to.equal(
-        '//import "/mock/modules/a.js"; import "/mock/modules/b.js"; import "/mock/modules/c.js";'
+        '//import "/mock/modules/a.js"; import "/mock/modules/b.js"; import "/mock/modules/c.js";',
       );
 
       await loader.call(context, '// import "MODULES/*.js";');
@@ -126,7 +130,7 @@ describe("loader", () => {
 
       expect(err).to.be.null;
       expect(cleanSource(source)).to.equal(
-        '// import "/mock/modules/a.js"; import "/mock/modules/b.js"; import "/mock/modules/c.js";'
+        '// import "/mock/modules/a.js"; import "/mock/modules/b.js"; import "/mock/modules/c.js";',
       );
     });
 
@@ -144,7 +148,7 @@ describe("loader", () => {
       let [err, source] = callback.getCall(0).args;
 
       expect(cleanSource(source)).to.equal(
-        'import * as modules0 from "/mock/modules/a.js"; import * as modules1 from "/mock/modules/b.js"; import * as modules2 from "/mock/modules/c.js";'
+        'import * as modules0 from "/mock/modules/a.js"; import * as modules1 from "/mock/modules/b.js"; import * as modules2 from "/mock/modules/c.js";',
       );
     });
 
@@ -162,7 +166,7 @@ describe("loader", () => {
       let [err, source] = callback.getCall(0).args;
 
       expect(cleanSource(source)).to.equal(
-        'import * as modules0 from "/mock/modules/a.js"; import * as modules1 from "/mock/modules/b.js"; import * as modules2 from "/mock/modules/c.js"; var modules = [modules0, modules1, modules2];'
+        'import * as modules0 from "/mock/modules/a.js"; import * as modules1 from "/mock/modules/b.js"; import * as modules2 from "/mock/modules/c.js"; var modules = [modules0, modules1, modules2];',
       );
     });
 
@@ -180,7 +184,7 @@ describe("loader", () => {
       let [err, source] = callback.getCall(0).args;
 
       expect(cleanSource(source)).to.equal(
-        'import * as modules0 from "/mock/modules/a.js"; import * as modules1 from "/mock/modules/b.js"; import * as modules2 from "/mock/modules/c.js"; var modules = [{path:"/mock/modules/a.js",module:modules0},{path:"/mock/modules/b.js",module:modules1},{path:"/mock/modules/c.js",module:modules2}];'
+        'import * as modules0 from "/mock/modules/a.js"; import * as modules1 from "/mock/modules/b.js"; import * as modules2 from "/mock/modules/c.js"; var modules = [{path:"/mock/modules/a.js",module:modules0},{path:"/mock/modules/b.js",module:modules1},{path:"/mock/modules/c.js",module:modules2}];',
       );
 
       getOptions.callsFake(() => ({}));
@@ -190,7 +194,7 @@ describe("loader", () => {
       [err, source] = callback.getCall(1).args;
 
       expect(cleanSource(source)).to.equal(
-        'import * as modules0 from "/mock/modules/a.js"; import * as modules1 from "/mock/modules/b.js"; import * as modules2 from "/mock/modules/c.js";'
+        'import * as modules0 from "/mock/modules/a.js"; import * as modules1 from "/mock/modules/b.js"; import * as modules2 from "/mock/modules/c.js";',
       );
     });
   });
@@ -203,7 +207,7 @@ describe("loader", () => {
 
       expect(err).to.be.null;
       expect(cleanSource(source)).to.equal(
-        '@import "/mock/modules/a.scss"; @import "/mock/modules/b.css";'
+        '@import "/mock/modules/a.scss"; @import "/mock/modules/b.css";',
       );
     });
 
@@ -221,7 +225,7 @@ describe("loader", () => {
 
       expect(err).to.be.null;
       expect(cleanSource(source)).to.equal(
-        '// @import "/mock/modules/a.scss"; @import "/mock/modules/b.css"; @import "/mock/modules/c.less";'
+        '// @import "/mock/modules/a.scss"; @import "/mock/modules/b.css"; @import "/mock/modules/c.less";',
       );
     });
   });
@@ -234,7 +238,7 @@ describe("loader", () => {
 
       expect(err).to.be.null;
       expect(cleanSource(source)).to.equal(
-        '@use "/mock/modules/a.scss" as *; @use "/mock/modules/b.css" as *;'
+        '@use "/mock/modules/a.scss" as *; @use "/mock/modules/b.css" as *;',
       );
 
       await loader.call(context, '@use "MODULES/*.{s,}css" as C;');
@@ -243,7 +247,7 @@ describe("loader", () => {
 
       expect(err).to.be.null;
       expect(cleanSource(source)).to.equal(
-        '@use "/mock/modules/a.scss" as C0; @use "/mock/modules/b.css" as C1;'
+        '@use "/mock/modules/a.scss" as C0; @use "/mock/modules/b.css" as C1;',
       );
 
       await loader.call(context, '@use "MODULES/*.{s,}css";');
@@ -252,7 +256,7 @@ describe("loader", () => {
 
       expect(err).to.be.null;
       expect(cleanSource(source)).to.equal(
-        '@use "/mock/modules/a.scss"; @use "/mock/modules/b.css";'
+        '@use "/mock/modules/a.scss"; @use "/mock/modules/b.css";',
       );
     });
   });
@@ -265,7 +269,7 @@ describe("loader", () => {
 
       expect(err).to.be.null;
       expect(cleanSource(source)).to.equal(
-        '@forward "/mock/modules/a.scss" as C0; @forward "/mock/modules/b.css" as C1;'
+        '@forward "/mock/modules/a.scss" as C0; @forward "/mock/modules/b.css" as C1;',
       );
 
       await loader.call(context, '@forward "MODULES/*.{s,}css";');
@@ -274,7 +278,7 @@ describe("loader", () => {
 
       expect(err).to.be.null;
       expect(cleanSource(source)).to.equal(
-        '@forward "/mock/modules/a.scss"; @forward "/mock/modules/b.css";'
+        '@forward "/mock/modules/a.scss"; @forward "/mock/modules/b.css";',
       );
     });
   });
@@ -293,7 +297,7 @@ describe("loader", () => {
 
       expect(err).to.be.null;
       expect(cleanSource(source)).to.equal(
-        'import "/mock/modules/fake_module/a.js"; import "/mock/modules/fake_module/b.js";'
+        'import "/mock/modules/fake_module/a.js"; import "/mock/modules/fake_module/b.js";',
       );
     });
   });
