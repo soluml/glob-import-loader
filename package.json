@@ -17,7 +17,7 @@
   "dependencies": {
     "array-flat-polyfill": "^1.0.1",
     "enhanced-resolve": "^5.19.0",
-    "glob": "^13.0.6",
+    "glob": "^14.0.4",
     "loader-utils": "^2.0.0",
     "string-replace-async": "^2.0.0"
   },
