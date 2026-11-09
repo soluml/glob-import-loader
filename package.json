@@ -1,6 +1,6 @@
 {
   "name": "glob-import-loader",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "Webpack loader that enables glob patterns in ES6 imports.",
   "license": "MIT",
   "main": "index.js",
@@ -17,17 +17,17 @@
   "dependencies": {
     "array-flat-polyfill": "^1.0.1",
     "enhanced-resolve": "^5.19.0",
-    "glob": "^13.0.6",
+    "glob": "^14.0.4",
     "loader-utils": "^2.0.0",
     "string-replace-async": "^2.0.0"
   },
   "devDependencies": {
     "chai": "^4.3.4",
-    "mocha": "^11.3.0",
+    "mocha": "^12.0.3",
     "sinon": "^12.0.1"
   },
   "engines": {
-    "node": ">=15.0.0"
+    "node": "18 || 20 || >=22"
   },
   "scripts": {
     "test": "mocha"
@@ -35,5 +35,11 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/soluml/glob-import-loader"
+  },
+  "overrides": {
+    "mocha": {
+      "glob": "$glob",
+      "minimatch": "^11.0.5"
+    }
   }
 }
